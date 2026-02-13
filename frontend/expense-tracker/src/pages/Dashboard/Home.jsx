@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { useExpenses } from "../../context/ExpenseContext";
+import { useIncome } from "../../context/IncomeContext"; // new
 import axios from "axios";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -16,26 +17,35 @@ const categoryColors = {
 
 export default function Dashboard() {
   const { expenses, setExpenses } = useExpenses();
+  const { income, setIncome } = useIncome(); // new
+
   const [filterMonth, setFilterMonth] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
 
-  // Fetch expenses from backend
+  // Fetch expenses + income
   useEffect(() => {
-    const fetchExpenses = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        const res = await axios.get("http://localhost:5000/api/expense", {
+        // Fetch Expenses
+        const resExpenses = await axios.get("http://localhost:5000/api/expense", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setExpenses(res.data);
+        setExpenses(resExpenses.data);
+
+        // Fetch Income
+        const resIncome = await axios.get("http://localhost:5000/api/income", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setIncome(resIncome.data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching data:", err);
       }
     };
-    fetchExpenses();
-  }, [setExpenses]);
+    fetchData();
+  }, [setExpenses, setIncome]);
 
   // Filter expenses
   const filteredExpenses = expenses.filter((e) => {
@@ -47,20 +57,32 @@ export default function Dashboard() {
     return matchesMonth && matchesCategory;
   });
 
+  // Filter income
+  const filteredIncome = income.filter((i) => {
+    return filterMonth
+      ? new Date(i.date).toISOString().slice(0, 7) === filterMonth
+      : true;
+  });
+
   // Calculations
   const totalExpense = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
   const monthlyExpense = filteredExpenses
-    .filter(
-      (e) => new Date(e.date).getMonth() === new Date().getMonth()
-    )
+    .filter((e) => new Date(e.date).getMonth() === new Date().getMonth())
     .reduce((acc, e) => acc + e.amount, 0);
 
+  const totalIncome = filteredIncome.reduce((acc, i) => acc + i.amount, 0);
+  const monthlyIncome = filteredIncome
+    .filter((i) => new Date(i.date).getMonth() === new Date().getMonth())
+    .reduce((acc, i) => acc + i.amount, 0);
+
+  const savings = monthlyIncome - monthlyExpense;
+
+  // Category totals for Pie chart
   const categoryTotals = {};
   filteredExpenses.forEach((e) => {
     categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
   });
 
-  // Top spending category
   const topCategory =
     Object.keys(categoryTotals).length > 0
       ? Object.keys(categoryTotals).reduce((a, b) =>
@@ -68,14 +90,8 @@ export default function Dashboard() {
         )
       : "-";
 
-  // Savings = Monthly Income - Monthly Expense (simplified)
-  const totalIncome = filteredExpenses
-    .filter((e) => e.source) // assuming income has source field
-    .reduce((acc, e) => acc + e.amount, 0);
-  const savings = totalIncome - monthlyExpense;
-
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this expense?")) return;
+  const handleDeleteExpense = async (id) => {
+    if (!confirm("Delete this expense?")) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`http://localhost:5000/api/expense/${id}`, {
@@ -91,28 +107,27 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-6 flex flex-col gap-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-green-500 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform">
+        <div className="bg-gradient-to-r from-green-400 to-green-500 text-white p-6 rounded-3xl shadow-lg hover:scale-105 transform transition-all">
           <h3 className="font-semibold text-lg">Monthly Income</h3>
-          <p className="text-3xl mt-2">₹{totalIncome}</p>
+          <p className="text-3xl mt-2 font-bold">₹{monthlyIncome}</p>
         </div>
-        <div className="bg-red-500 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform">
+        <div className="bg-gradient-to-r from-red-400 to-red-500 text-white p-6 rounded-3xl shadow-lg hover:scale-105 transform transition-all">
           <h3 className="font-semibold text-lg">Monthly Expense</h3>
-          <p className="text-3xl mt-2">₹{monthlyExpense}</p>
+          <p className="text-3xl mt-2 font-bold">₹{monthlyExpense}</p>
         </div>
-        <div className="bg-blue-500 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform">
+        <div className="bg-gradient-to-r from-blue-400 to-blue-500 text-white p-6 rounded-3xl shadow-lg hover:scale-105 transform transition-all">
           <h3 className="font-semibold text-lg">Savings</h3>
-          <p className="text-3xl mt-2">₹{savings}</p>
+          <p className="text-3xl mt-2 font-bold">₹{savings}</p>
         </div>
-        <div className="bg-yellow-500 text-white p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform">
+        <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white p-6 rounded-3xl shadow-lg hover:scale-105 transform transition-all">
           <h3 className="font-semibold text-lg">Top Category</h3>
-          <p className="text-3xl mt-2">{topCategory}</p>
+          <p className="text-3xl mt-2 font-bold">{topCategory}</p>
         </div>
       </div>
 
-      {/* Pie Chart + Filter */}
+      {/* Filter + Pie Chart */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Filter Card */}
-        <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col gap-4">
+        <div className="bg-white p-6 rounded-3xl shadow-lg flex flex-col gap-4">
           <h3 className="text-gray-700 font-semibold text-lg">Filter Expenses</h3>
           <div className="flex flex-col md:flex-row gap-4">
             <input
@@ -134,8 +149,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Pie Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center">
+        <div className="bg-white p-6 rounded-3xl shadow-lg flex flex-col items-center justify-center">
           <h3 className="text-gray-700 font-semibold text-lg mb-4">Expenses by Category</h3>
           {Object.keys(categoryTotals).length === 0 ? (
             <p className="text-gray-400">No expenses yet</p>
@@ -149,62 +163,92 @@ export default function Dashboard() {
                     backgroundColor: Object.keys(categoryTotals).map(
                       (c) => categoryColors[c]
                     ),
+                    hoverOffset: 10,
                   },
                 ],
+              }}
+              options={{
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { color: "#374151", boxWidth: 20, padding: 15 },
+                  },
+                },
               }}
             />
           )}
         </div>
       </div>
 
-      {/* Recent Expenses */}
-      <div className="bg-white p-6 rounded-2xl shadow-lg overflow-x-auto">
-        <h3 className="font-semibold text-lg mb-4">Recent Transactions</h3>
-        <table className="min-w-full table-auto border-collapse">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-2 text-left">Date</th>
-              <th className="px-4 py-2 text-left">Category</th>
-              <th className="px-4 py-2 text-left">Amount</th>
-              <th className="px-4 py-2 text-left">Description</th>
-              <th className="px-4 py-2 text-left">Actions</th>
+      {/* Recent Transactions */}
+      <div className="bg-white p-6 rounded-3xl shadow-lg overflow-x-auto">
+  <h3 className="font-semibold text-lg mb-4">Recent Transactions</h3>
+  
+  {filteredExpenses.length + filteredIncome.length === 0 ? (
+    <div className="text-center py-20 text-gray-400 text-xl">
+      No transactions yet. Start adding some!
+    </div>
+  ) : (
+    <table className="min-w-full divide-y divide-gray-200 shadow-lg rounded-xl overflow-hidden">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Date
+          </th>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Type
+          </th>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Category / Source
+          </th>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Amount
+          </th>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Description
+          </th>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {[...filteredExpenses, ...filteredIncome]
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .map((e) => (
+            <tr key={e._id} className="hover:bg-gray-50 transition duration-150">
+              <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                {new Date(e.date).toLocaleDateString()}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap font-medium">
+                {e.category ? "Expense" : "Income"}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {e.category || e.source}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap font-semibold text-green-600">
+                ₹{e.amount.toLocaleString()}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                {e.description || "-"}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {e.category && (
+                  <button
+                    onClick={() => handleDeleteExpense(e._id)}
+                    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition duration-300"
+                  >
+                    Delete
+                  </button>
+                )}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {filteredExpenses.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-4 text-gray-500">
-                  No expenses found.
-                </td>
-              </tr>
-            ) : (
-              filteredExpenses.map((e) => (
-                <tr key={e._id} className="border-b hover:bg-gray-50 transition">
-                  <td className="px-4 py-2">{new Date(e.date).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className="px-2 py-1 rounded-full text-white"
-                      style={{ backgroundColor: categoryColors[e.category] }}
-                    >
-                      {e.category}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2">₹{e.amount}</td>
-                  <td className="px-4 py-2">{e.description}</td>
-                  <td className="px-4 py-2">
-                    <button
-                      onClick={() => handleDelete(e._id)}
-                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+          ))}
+      </tbody>
+    </table>
+  )}
+</div>
+
     </div>
   );
 }

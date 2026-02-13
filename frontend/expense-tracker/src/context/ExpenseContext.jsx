@@ -1,7 +1,7 @@
-// src/context/ExpenseContext.jsx
+
 import React, { createContext, useState, useContext } from "react";
 
-// Create context
+
 const ExpenseContext = createContext();
 
 // Provider component
@@ -16,7 +16,7 @@ export const ExpenseProvider = ({ children }) => {
   );
 };
 
-// Custom hook for easy usage
+
 export const useExpenses = () => {
   const context = useContext(ExpenseContext);
   if (!context) {

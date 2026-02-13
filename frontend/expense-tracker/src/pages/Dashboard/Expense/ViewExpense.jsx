@@ -99,7 +99,7 @@ export default function ViewExpense() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">
-                    ${e.amount.toFixed(2)}
+                    ₹{e.amount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-600">
                     {e.description || "-"}

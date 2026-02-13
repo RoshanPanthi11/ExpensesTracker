@@ -52,65 +52,72 @@ export default function AddExpense() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Add New Expense</h2>
-      <form className="flex flex-col gap-4" onSubmit={handleAddExpense}>
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex flex-col flex-1">
-            <label className="text-gray-600 mb-1">Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="border p-2 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
-            />
-          </div>
-          <div className="flex flex-col flex-1">
-            <label className="text-gray-600 mb-1">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="border p-2 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
-            >
-              <option value="">Select Category</option>
-              {categories.map((cat) => (
-                <option key={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex flex-col flex-1">
-            <label className="text-gray-600 mb-1">Amount ($)</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              min="0"
-              step="0.01"
-              className="border p-2 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
-            />
-          </div>
-          <div className="flex flex-col flex-1">
-            <label className="text-gray-600 mb-1">Description</label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter description"
-              className="border p-2 rounded-lg focus:ring-2 focus:ring-purple-300 transition"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition mt-4 w-full md:w-auto self-center"
+    <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-2xl">
+  <h2 className="text-3xl font-bold mb-8 text-center text-gray-800">
+    Add New Expense
+  </h2>
+  <form className="flex flex-col gap-6" onSubmit={handleAddExpense}>
+    {/* Date + Category */}
+    <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col flex-1">
+        <label className="text-gray-700 font-medium mb-2">Date</label>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-purple-400 focus:outline-none transition shadow-sm hover:shadow-md"
+        />
+      </div>
+      <div className="flex flex-col flex-1">
+        <label className="text-gray-700 font-medium mb-2">Category</label>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-purple-400 focus:outline-none transition shadow-sm hover:shadow-md"
         >
-          Add Expense
-        </button>
-      </form>
+          <option value="">Select Category</option>
+          {categories.map((cat) => (
+            <option key={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
     </div>
+
+    {/* Amount + Description */}
+    <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col flex-1">
+        <label className="text-gray-700 font-medium mb-2">Amount ($)</label>
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+          className="border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-purple-400 focus:outline-none transition shadow-sm hover:shadow-md"
+        />
+      </div>
+      <div className="flex flex-col flex-1">
+        <label className="text-gray-700 font-medium mb-2">Description</label>
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Enter description"
+          className="border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-purple-400 focus:outline-none transition shadow-sm hover:shadow-md"
+        />
+      </div>
+    </div>
+
+    {/* Submit Button */}
+    <button
+      type="submit"
+      className="bg-gradient-to-r from-purple-600 to-purple-400 text-white py-3 px-8 rounded-2xl hover:scale-105 transform transition-all font-semibold shadow-lg self-center mt-4"
+    >
+      Add Expense
+    </button>
+  </form>
+</div>
+
   );
 }

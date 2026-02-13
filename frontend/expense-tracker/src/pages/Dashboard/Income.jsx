@@ -150,44 +150,60 @@ export default function Income() {
       )}
 
       {/* 📊 Income Table */}
-      <div className="bg-white shadow-lg rounded-xl p-6 overflow-x-auto">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Income Records</h3>
+      <div className="overflow-x-auto bg-white shadow-lg rounded-xl p-6">
+  <h3 className="text-xl font-semibold text-gray-800 mb-4">Income Records</h3>
 
-        {incomes.length === 0 ? (
-          <div className="text-center py-10 text-gray-400">
-            <p className="text-2xl mb-4">No income yet!</p>
-            <p>Add your first income using the form above 😊</p>
-          </div>
-        ) : (
-          <table className="min-w-full table-auto border-collapse">
-            <thead className="bg-gray-100 rounded-lg">
-              <tr>
-                <th className="px-4 py-2 text-left">Source</th>
-                <th className="px-4 py-2 text-left">Amount</th>
-                <th className="px-4 py-2 text-left">Date</th>
-                <th className="px-4 py-2 text-left">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {incomes.map((income) => (
-                <tr key={income._id} className="border-b hover:bg-gray-50 transition">
-                  <td className="px-4 py-2 font-medium">{income.source}</td>
-                  <td className="px-4 py-2 text-green-600 font-semibold">{formatCurrency(income.amount)}</td>
-                  <td className="px-4 py-2">{formatDate(income.date)}</td>
-                  <td className="px-4 py-2">
-                    <button
-                      onClick={() => handleDelete(income._id)}
-                      className="flex items-center gap-1 text-red-600 hover:underline"
-                    >
-                      <TrashIcon className="w-5 h-5" /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+  {incomes.length === 0 ? (
+    <div className="text-center py-20 text-gray-400 text-xl">
+      No income yet. Start adding some!
+    </div>
+  ) : (
+    <table className="min-w-full divide-y divide-gray-200 shadow-lg rounded-xl overflow-hidden">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Source
+          </th>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Amount
+          </th>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Date
+          </th>
+          <th className="px-6 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {incomes.map((income) => (
+          <tr
+            key={income._id}
+            className="hover:bg-gray-50 transition duration-150"
+          >
+            <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+              {income.source}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">
+              {formatCurrency(income.amount)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+              {formatDate(income.date)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <button
+                onClick={() => handleDelete(income._id)}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div>
     </div>
   );
 }

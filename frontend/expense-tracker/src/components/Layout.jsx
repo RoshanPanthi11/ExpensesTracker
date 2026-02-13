@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeIcon,
@@ -20,13 +20,25 @@ export default function Layout({ children }) {
   const [open, setOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Auth check on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/", { replace: true }); // redirect to login if no token
+    } else {
+      setLoading(false);
+    }
+  }, [navigate]);
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     alert("Logged out successfully!");
-    navigate("/"); // redirect to login
+    navigate("/", { replace: true }); // redirect to login
   };
 
-  // Helper to format header title
   const formatTitle = (pathname) => {
     return pathname
       .replace("/", "")
@@ -34,6 +46,8 @@ export default function Layout({ children }) {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ") || "Dashboard";
   };
+
+  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -92,7 +106,6 @@ export default function Layout({ children }) {
             {formatTitle(location.pathname)}
           </h2>
           <div className="flex items-center gap-4">
-            {/* Profile placeholder */}
             <div className="w-10 h-10 bg-indigo-500 text-white rounded-full flex items-center justify-center font-bold">
               U
             </div>
